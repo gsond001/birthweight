@@ -1,0 +1,32 @@
+"""
+Created on Wed Mar  6 17:07:53 2019
+
+Predicting birthweight for mothers
+
+Team 2: Valentino, Ji-wei, Ankur, Michelle, Gabriela
+
+
+@author: Gsond001
+"""
+
+#*Make Sure you are in the right directory*
+
+
+
+#We begin by loading the libraries:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split # train/test split
+from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
+import statsmodels.formula.api as smf # regression modeling
+
+
+#importing the file usinf bw for the file birthweight
+file = 'birthweight.xlsx'
+bw = pd.read_excel(file)
+
+#Looking at column names
+
+bw.columns
