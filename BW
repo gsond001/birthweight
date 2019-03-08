@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Created on Wed Mar  6 17:07:53 2019
 
@@ -17,6 +19,7 @@ Team 2: Valentino, Ji-wei, Ankur, Michelle, Gabriela
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from sklearn.model_selection import train_test_split # train/test split
 from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
@@ -30,3 +33,205 @@ bw = pd.read_excel(file)
 #Looking at column names
 
 bw.columns
+
+
+#Looking to see Apgar and finding out what it really means:
+
+
+bw['omaps']
+
+#Showing the head the dataset
+print(bw.head())
+
+#Looking at the shape of the dataset
+
+bw.shape
+
+
+#Looking at the info of the variables
+bw.info()
+
+#Looking at the statistics for the dataset
+bw.describe().round(2)
+
+#Looking at birthweight slargest to smallest
+
+bw.sort_values('bwght', ascending = False)
+
+
+#Imputing missing values#
+
+print(
+      bw.
+      isnull()
+      .sum()
+      )
+
+for col in bw:
+
+    """ Create columns that are 0s if a value was not missing and 1 if
+    a value is missing. """
+    
+    if bw[col].isnull().any():
+        bw['m_'+col] = bw[col].isnull().astype(int)
+
+
+"""There are missing values in Mother's Educatin Mothers prenatal care,
+Number of prenatal visits, father's age, father's education, One minute 
+Apagar, Five minute apagar, average cigrette per day, and average drinks per
+day."""
+
+
+#Creating a dataset for dropped value
+
+df_dropped = bw.dropna()
+
+
+#Creating plots to visualize the histgrams.
+
+
+
+
+
+plt.subplot(6, 3, 1)
+sns.distplot(df_dropped['bwght'],
+             color = 'g')
+plt.xlabel('Birth-Weight')
+
+plt.subplot(6, 3, 2)
+sns.distplot(df_dropped['mage'],
+             color = 'r')
+plt.xlabel('Mothers Age')
+
+plt.subplot(6, 3, 3)
+sns.distplot(df_dropped['meduc'],
+             color = 'orange')
+plt.xlabel('Mothers Education')
+
+
+plt.subplot(6, 3, 4)
+sns.distplot(df_dropped['monpre'],
+             color = 'blue')
+plt.xlabel('Months of Prenatal Care')
+
+plt.subplot(6, 3, 5)
+sns.distplot(df_dropped['npvis'],
+             color = 'pink')
+plt.xlabel('Number of Previsits')
+
+
+plt.subplot(6, 3, 6)
+sns.distplot(df_dropped['fage'],
+             color = 'purple')
+plt.xlabel('Fathers Age')
+
+plt.subplot(6, 3, 7)
+sns.distplot(df_dropped['feduc'],
+             color = 'y')
+plt.xlabel('Fathers Education')
+
+plt.subplot(6, 3, 8)
+sns.distplot(df_dropped['omaps'],
+             color = 'g')
+plt.xlabel('One-Minute Apgar')
+
+plt.subplot(6, 3, 9)
+sns.distplot(df_dropped['fmaps'],
+             color = 'r')
+plt.xlabel('Five-Minute Apgar')
+
+plt.subplot(6, 3, 10)
+sns.distplot(df_dropped['cigs'],
+             color = 'orange')
+plt.xlabel('Average Cigarettes Smoked a Day')
+
+
+
+plt.subplot(6, 3, 11)
+sns.distplot(df_dropped['drink'],
+             color = 'blue')
+plt.xlabel('Average Drinks Sper Week')
+
+
+plt.subplot(6, 3, 12)
+sns.distplot(df_dropped['male'],
+             color = 'pink')
+plt.xlabel('1 if Baby is Male')
+
+
+plt.subplot(6, 3, 13)
+sns.distplot(df_dropped['mwhte'],
+             color = 'purple')
+plt.xlabel('1 if Mother is White')
+
+plt.subplot(6, 3, 14)
+sns.distplot(df_dropped['mblck'],
+             color = 'y')
+plt.xlabel('1 if Mother is Black')
+
+
+plt.subplot(6, 3, 15)
+sns.distplot(df_dropped['moth'],
+             color = 'g')
+plt.xlabel('1 if Mother is Other')
+
+
+plt.subplot(6, 3, 16)
+sns.distplot(df_dropped['fwhte'],
+             color = 'r')
+plt.xlabel('1 if Father is White')
+
+plt.subplot(6, 3, 17)
+sns.distplot(df_dropped['fblck'],
+             color = 'blue')
+plt.xlabel('1 if Father is Black')
+
+
+plt.subplot(6, 3, 18)
+sns.distplot(df_dropped['foth'],
+             color = 'pink')
+plt.xlabel('1 if Father is Other')
+
+plt.savefig('Birthweight Histograms 1.jpeg')
+
+plt.show()
+
+
+
+
+"""
+
+Assumed Continuous/Interval Variables - 
+
+Mother's Age
+Months of prenatal care
+Number of Prenatal visits
+Father's Age
+Average Cigrette smoked per day
+Average Drinks per week
+Birthweight
+
+Assumed Categorical -
+
+Mother's Education
+Father's Education
+One Minute Apgar - 10-0 Descending order categorical
+Five Minute Apgar - Descending order categorical
+
+
+
+Binary Classifiers -
+
+Male
+Mother White
+Mother Black 
+Mother Other
+Father White
+Father Black
+Father Other 
+
+"""
+
+
+
+
