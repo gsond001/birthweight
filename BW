@@ -1,20 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar  6 17:07:53 2019
-
-Predicting birthweight for mothers
-
-Team 2: Valentino, Ji-wei, Ankur, Michelle, Gabriela
-
-
-@author: Gsond001
-"""
-
-#*Make Sure you are in the right directory*
-
-
-
 #We begin by loading the libraries:
 
 import pandas as pd
@@ -26,6 +9,7 @@ from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
 import statsmodels.formula.api as smf # regression modeling
 
 
+
 #importing the file usinf bw for the file birthweight
 file = 'birthweight.xlsx'
 bw = pd.read_excel(file)
@@ -35,10 +19,6 @@ bw = pd.read_excel(file)
 bw.columns
 
 
-#Looking to see Apgar and finding out what it really means:
-
-
-bw['omaps']
 
 #Showing the head the dataset
 print(bw.head())
@@ -57,6 +37,8 @@ bw.describe().round(2)
 #Looking at birthweight slargest to smallest
 
 bw.sort_values('bwght', ascending = False)
+
+
 
 
 #Imputing missing values#
@@ -78,20 +60,16 @@ for col in bw:
 
 """There are missing values in Mother's Educatin Mothers prenatal care,
 Number of prenatal visits, father's age, father's education, One minute 
-Apagar, Five minute apagar, average cigrette per day, and average drinks per
-day."""
+Apagar, Five minute apagar, average cigrette per day, and average drinks 
+perday."""
 
 
 #Creating a dataset for dropped value
 
-df_dropped = bw.dropna()
+df_dropped = bw.dropna() 
 
 
 #Creating plots to visualize the histgrams.
-
-
-
-
 
 plt.subplot(6, 3, 1)
 sns.distplot(df_dropped['bwght'],
@@ -196,6 +174,60 @@ plt.savefig('Birthweight Histograms 1.jpeg')
 
 plt.show()
 
+corr= df_dropped.corr()
+sns.heatmap(corr, 
+        xticklabels=corr.columns,
+        yticklabels=corr.columns)
+
+#Looking at distributions for some vatiables to check if there is biased
+
+df_dropped[['mage','bwght']].groupby(['mage'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['mage'])
+
+
+
+df_dropped[['meduc','bwght']].groupby(['meduc'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['meduc'])
+
+
+df_dropped[['monpre','bwght']].groupby(['monpre'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['monpre'])
+
+df_dropped[['npvis','bwght']].groupby(['npvis'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['npvis'])
+                
+
+
+df_dropped[['cigs','bwght']].groupby(['cigs'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['cigs'])
+
+df_dropped[['drink','bwght']].groupby(['drink'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['drink'])
+
+df_dropped[['mwhte','bwght']].groupby(['mwhte'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['mwhte'])                           
+                        
+df_dropped[['male','bwght']].groupby(['male'])['bwght'] \
+                             .count() \
+                             .reset_index(name='count') \
+                             .sort_values(['male'])  
+
+
+
 
 
 
@@ -231,7 +263,4 @@ Father Black
 Father Other 
 
 """
-
-
-
 
