@@ -7,47 +7,55 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split # train/test split
 from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
 import statsmodels.formula.api as smf # regression modeling
+from sklearn.tree import DecisionTreeRegressor # Regression trees
+from sklearn.tree import export_graphviz # Exports graphics
+from sklearn.externals.six import StringIO # Saves an object in memory
+from IPython.display import Image # Displays an image on the frontend
+import pydotplus # Interprets dot objects
 
 
-
-#importing the file usinf bw for the file birthweight
-file = 'birthweight.xlsx'
+file = 'birthweight_feature_set.xlsx'
 bw = pd.read_excel(file)
 
-#Looking at column names
 
+ 
+# # Exploratory analysis of the dataset
+# Column names
 bw.columns
 
 
-
-#Showing the head the dataset
+# Displaying the first rows of the DataFrame
 print(bw.head())
 
-#Looking at the shape of the dataset
 
+# Dimensions of the DataFrame
 bw.shape
 
 
-#Looking at the info of the variables
+# Information about each variable
 bw.info()
 
-#Looking at the statistics for the dataset
+
+# Descriptive statistics
 bw.describe().round(2)
 
-#Looking at birthweight slargest to smallest
 
-bw.sort_values('bwght', ascending = False)
-
+## Dealing with missing values
 
 
-
-#Imputing missing values#
-
-print(
-      bw.
-      isnull()
+# Total of missing values
+print(bw
+      .isnull()
       .sum()
-      )
+      .sum()
+)
+
+# Missing values per column
+print(bw
+      .isnull()
+      .sum()
+)
+
 
 for col in bw:
 
@@ -58,176 +66,64 @@ for col in bw:
         bw['m_'+col] = bw[col].isnull().astype(int)
 
 
-"""There are missing values in Mother's Educatin Mothers prenatal care,
-Number of prenatal visits, father's age, father's education, One minute 
-Apagar, Five minute apagar, average cigrette per day, and average drinks 
-perday."""
 
 
-#Creating a dataset for dropped value
-
-df_dropped = bw.dropna() 
-
-
-#Creating plots to visualize the histgrams.
-
-plt.subplot(6, 3, 1)
-sns.distplot(df_dropped['bwght'],
-             color = 'g')
-plt.xlabel('Birth-Weight')
-
-plt.subplot(6, 3, 2)
-sns.distplot(df_dropped['mage'],
-             color = 'r')
-plt.xlabel('Mothers Age')
-
-plt.subplot(6, 3, 3)
-sns.distplot(df_dropped['meduc'],
-             color = 'orange')
-plt.xlabel('Mothers Education')
-
-
-plt.subplot(6, 3, 4)
-sns.distplot(df_dropped['monpre'],
-             color = 'blue')
-plt.xlabel('Months of Prenatal Care')
-
-plt.subplot(6, 3, 5)
-sns.distplot(df_dropped['npvis'],
-             color = 'pink')
-plt.xlabel('Number of Previsits')
-
-
-plt.subplot(6, 3, 6)
-sns.distplot(df_dropped['fage'],
-             color = 'purple')
-plt.xlabel('Fathers Age')
-
-plt.subplot(6, 3, 7)
-sns.distplot(df_dropped['feduc'],
-             color = 'y')
-plt.xlabel('Fathers Education')
-
-plt.subplot(6, 3, 8)
-sns.distplot(df_dropped['omaps'],
-             color = 'g')
-plt.xlabel('One-Minute Apgar')
-
-plt.subplot(6, 3, 9)
-sns.distplot(df_dropped['fmaps'],
-             color = 'r')
-plt.xlabel('Five-Minute Apgar')
-
-plt.subplot(6, 3, 10)
-sns.distplot(df_dropped['cigs'],
-             color = 'orange')
-plt.xlabel('Average Cigarettes Smoked a Day')
+# ### Columns with missing values:
+# * meduc:     3
+# * npvis:     3
+# * feduc:     7
 
 
 
-plt.subplot(6, 3, 11)
-sns.distplot(df_dropped['drink'],
-             color = 'blue')
-plt.xlabel('Average Drinks Sper Week')
+"""Let's fill the missing values.
+Now than we saw that the missing values in this dataset is not "big deal" 
+because we have less than 5% of rows compromissed. Here is where we nee to 
+decide if we just dropp the missing values or we 
+apply a technoque to fill in the values. In this case because are a few is 
+almost the same dropp them or fill with the median. If you have more missing
+values you can ill it with:
+* Median for distributions with skewness (right or left)
+* Mean with normal (or almost) distributions (in my case I preffer to always 
+use the median because there's almost no difference if is normal distributed.
+* Linear regression to predict the values using another variable correlated 
+to this variables with missing values (here we need to be carefull, thinking in
+the future, with Multicollinearity (https://en.wikipedia.org/wiki/Multicollinearity ).
+* Another one, but more difficult, is to find other obserbations inside of 
+the dataset with similar characteristics of the ones with missing values 
+and fill the NaS with the data from this other observations."""
 
 
-plt.subplot(6, 3, 12)
-sns.distplot(df_dropped['male'],
-             color = 'pink')
-plt.xlabel('1 if Baby is Male')
+# Here we will use the median to fill in the missing values
+
+# Let's first create a new df with with the imputation
+bw_m = pd.DataFrame.copy(bw)
+
+for col in bw_m.columns:
+    if (bw_m[col].isnull().any()) == True:
+        bw_m[col] = bw_m[col].fillna(bw_m[col].median())
+        
+
+# Now let's check the missing values were correctly imputed
+bw_m.info()
+
+print(bw_m.describe().round(2))
+
+print(bw_m.isnull().sum().sum())
 
 
-plt.subplot(6, 3, 13)
-sns.distplot(df_dropped['mwhte'],
-             color = 'purple')
-plt.xlabel('1 if Mother is White')
+# # Analysis of our objective variable (dependent): Birth Weight (bwght)
+# 
+# Here we will se how is this variable distributed and other aspects of it such as:
+# * Descriptive statistics summary
+# * Distribution
+# 
+# Let's see how is our variable like
 
-plt.subplot(6, 3, 14)
-sns.distplot(df_dropped['mblck'],
-             color = 'y')
-plt.xlabel('1 if Mother is Black')
+# ### Summary of Descriptive Statistics
+# Here we have view of the shape and description of our predictive (dependent) variable.
 
-
-plt.subplot(6, 3, 15)
-sns.distplot(df_dropped['moth'],
-             color = 'g')
-plt.xlabel('1 if Mother is Other')
-
-
-plt.subplot(6, 3, 16)
-sns.distplot(df_dropped['fwhte'],
-             color = 'r')
-plt.xlabel('1 if Father is White')
-
-plt.subplot(6, 3, 17)
-sns.distplot(df_dropped['fblck'],
-             color = 'blue')
-plt.xlabel('1 if Father is Black')
-
-
-plt.subplot(6, 3, 18)
-sns.distplot(df_dropped['foth'],
-             color = 'pink')
-plt.xlabel('1 if Father is Other')
-
-plt.savefig('Birthweight Histograms 1.jpeg')
-
-plt.show()
-
-corr= df_dropped.corr()
-sns.heatmap(corr, 
-        xticklabels=corr.columns,
-        yticklabels=corr.columns)
-
-#Looking at distributions for some vatiables to check if there is biased
-
-df_dropped[['mage','bwght']].groupby(['mage'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['mage'])
-
-
-
-df_dropped[['meduc','bwght']].groupby(['meduc'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['meduc'])
-
-
-df_dropped[['monpre','bwght']].groupby(['monpre'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['monpre'])
-
-df_dropped[['npvis','bwght']].groupby(['npvis'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['npvis'])
-                
-
-
-df_dropped[['cigs','bwght']].groupby(['cigs'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['cigs'])
-
-df_dropped[['drink','bwght']].groupby(['drink'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['drink'])
-
-df_dropped[['mwhte','bwght']].groupby(['mwhte'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['mwhte'])                           
-                        
-df_dropped[['male','bwght']].groupby(['male'])['bwght'] \
-                             .count() \
-                             .reset_index(name='count') \
-                             .sort_values(['male'])  
-
-
-
+# Let's see the summary of the descriptive statistics
+bw_m['bwght'].describe()
 
 
 
@@ -264,3 +160,712 @@ Father Other
 
 """
 
+
+
+#Creating plots to visualize the histgrams.
+
+
+
+########################
+# Visual EDA (Histograms)
+########################
+
+###### Birthweight Plot #########
+sns.distplot(bw_m['bwght'],
+             color = 'g')
+plt.xlabel('Birth-Weight')
+
+######Plots 1 of 5 #########
+
+
+plt.subplot(2, 2, 1)
+sns.distplot(bw_m['mage'],
+             color = 'r')
+plt.xlabel('Mothers Age')
+
+plt.subplot(2, 2, 2)
+sns.distplot(bw_m['meduc'],
+             color = 'orange')
+plt.xlabel('Mothers Education')
+
+
+
+plt.subplot(2, 2, 3)
+sns.distplot(bw_m['fage'],
+             color = 'purple')
+plt.xlabel('Fathers Age')
+
+
+plt.subplot(2, 2, 4)
+sns.distplot(bw_m['feduc'],
+             color = 'y')
+plt.xlabel('Fathers Education')
+
+
+plt.tight_layout()
+plt.savefig('Birthweight Histograms 1.jpeg')
+plt.show()
+
+######Plots 2 of 5 #########
+
+plt.subplot(2, 2, 1)
+sns.distplot(bw_m['monpre'],
+             color = 'blue')
+plt.xlabel('Months of Prenatal Care')
+
+plt.subplot(2, 2, 2)
+sns.distplot(bw_m['npvis'],
+             color = 'pink')
+plt.xlabel('Number of Previsits')
+
+
+
+plt.subplot(2, 2, 3)
+sns.distplot(bw_m['omaps'],
+             color = 'g')
+plt.xlabel('One-Minute Apgar')
+
+plt.subplot(2, 2, 4)
+sns.distplot(bw_m['fmaps'],
+             color = 'r')
+plt.xlabel('Five-Minute Apgar')
+
+
+plt.tight_layout()
+plt.savefig('Birthweight Histograms 2.jpeg')
+plt.show()
+
+
+######Plots 3 of 5 #########
+
+plt.subplot(2, 2, 1)
+sns.distplot(bw_m['cigs'],
+             color = 'orange')
+plt.xlabel('Average Cigarettes Smoked a Day')
+
+
+
+plt.subplot(2, 2, 2)
+sns.distplot(bw_m['drink'],
+             color = 'blue')
+plt.xlabel('Average Drinks Sper Week')
+
+
+plt.subplot(2, 2, 3)
+sns.distplot(bw_m['male'],
+             color = 'pink')
+plt.xlabel('1 if Baby is Male')
+
+plt.tight_layout()
+plt.savefig('Birthweight Histograms 3.jpeg')
+plt.show()
+
+
+######Plots 4 of 5 #########
+
+plt.subplot(2, 2, 1)
+sns.distplot(bw_m['mwhte'],
+             color = 'purple')
+plt.xlabel('1 if Mother is White')
+
+plt.subplot(2, 2, 2)
+sns.distplot(bw_m['mblck'],
+             color = 'y')
+plt.xlabel('1 if Mother is Black')
+
+
+plt.subplot(2, 2, 3)
+sns.distplot(bw_m['moth'],
+             color = 'g')
+plt.xlabel('1 if Mother is Other')
+
+plt.tight_layout()
+plt.savefig('Birthweight Histograms 4.jpeg')
+plt.show()
+
+######Plots 5 of 5 #########
+
+plt.subplot(2, 2, 1)
+sns.distplot(bw_m['fwhte'],
+             color = 'r')
+plt.xlabel('1 if Father is White')
+
+plt.subplot(2, 2, 2)
+sns.distplot(bw_m['fblck'],
+             color = 'blue')
+plt.xlabel('1 if Father is Black')
+
+
+plt.subplot(2, 2, 3)
+sns.distplot(bw_m['foth'],
+             color = 'pink')
+plt.xlabel('1 if Father is Other')
+plt.savefig('Birthweight Histograms 5.jpeg')
+plt.show()
+
+
+
+
+
+
+"""Here we can see that the minimun value is greater than 0, meaning that there is 
+no values that will destroy the model when created. Also, we can see that 
+the min value is really low and the normal mid values (the IQR) the values rage 
+between 2916 Kgs and 3759 that is a normal weight for birth weights: 
+    **a mean of 3.5 kilograms, though the range of normal is 
+    between 2.5 kilograms and 4.5 kilograms**. 
+    (source: https://en.wikipedia.org/wiki/Birth_weight )*
+After looking at this data, we can see that a good weight at birth is 
+a really important factor of health in life, like the source said: 
+    *"to show links between birth weight and later-life conditions, including 
+    **diabetes, obesity, tobacco smoking, and intelligence**. 
+    Low birth weight is associated with 
+    **neonatal infection** and **infant mortality**" 
+    (source: https://en.wikipedia.org/wiki/Birth_weight ).*
+
+# As wee can see also the MAX value is normal, 4933Kgs, so now let's see 
+how many low values we have, because this cases can be a 
+reflection of a low quality of health."""
+
+ 
+# ### Let's sort the values of Birth Weight from ascending (low to bigger)
+# Here we sort the values and display only the first 20 results.
+
+
+bw_m['bwght'].sort_values(ascending = True).head(20)
+
+
+"""Here we can see that the first 15 values are below the min value of the 
+normal range for a baby to be healthy. We can analize this observations to 
+see what's happening on the other variables in order to try to predict 
+the low brthweight."""
+
+# ### Distribution of the objective variable
+# Distribution of the Birth Weight variable, to understand its behaviour
+
+
+
+sns.distplot(bw_m['bwght'])
+
+
+# ***We can see a light left Skewness, but is not strong.***
+
+
+# # Correlation Analysis
+# 
+"""Now that we've done the analysis on the varibles and some web 
+exploration, let's do some data correlation between the variables to 
+see what else we can find and also to see corr() between the 
+"birth weight" and some other variables."""
+
+
+
+
+# # Outliers Analysis
+# Let's take a look on the outliers before going into Model Land.
+# 
+# Let's make some boxplots in order to see the outliers in the different variables.
+
+#Let's make a loop in order to graph all the boxplots
+
+for col in bw_m:
+    sns.set()
+    plt.figure(figsize = (7, 3))
+    ax = sns.boxplot(x=bw_m[col], data=bw_m)
+    plt.setp(ax.artists, alpha=.5, linewidth=2, edgecolor="k")
+    plt.xticks(rotation=45)
+
+
+# ***Here was really interest the outliers of the following variables:***
+# * mage
+# * fage
+# * drink
+# * bwght
+# 
+# 
+# ### **Now let's see the values for this variables**
+
+
+bw_m[['mage', 'fage', 'drink', 'bwght']].describe()
+
+
+# *Now let's graph the scater plots of the variables with interesting outliers*
+
+
+sns.set()
+cols = ['bwght', 'drink', 'mage', 'fage']
+sns.pairplot(bw_m[cols], height= 2.5)
+plt.show();
+
+"""
+*Here we can see something really interesting, take a look to the 
+outliers value in the scater plot relating bwght vs (fage, mage) here you can 
+see 2 to 4 outliers with a low birth weight and with parents with a high age.*
+"""
+# Let's go there and see which are this values and what is happening there
+
+
+bw_m_outliers = bw_m.sort_values(ascending = True, by = 'bwght').head(4)
+print(bw_m_outliers)
+bw_m_outliers.describe()
+
+
+bw_m_outliers_corr = bw_m_outliers.corr()
+# now let's do the graph of the heatmap
+fig, ax=plt.subplots(figsize=(10,10))
+sns.set(font_scale=2)
+sns.heatmap(bw_m_outliers_corr,
+            cmap = 'Blues',
+            square = True,
+            annot = False,
+            linecolor = 'black',
+            linewidths = 0.5)
+
+#plt.savefig('correlation_matrix_all_var')
+plt.show()
+
+
+
+#Outlier Imputation
+
+mage_hi = 55
+mage_lo = 14
+
+meduc_hi = 17 
+meduc_lo = 8
+
+fage_hi = 60
+fage_lo = 23
+
+feduc_hi = 17 
+feduc_lo = 8
+
+monpre_hi = 4
+
+npvis_hi = 15
+npvis_lo = 5
+
+omaps_hi = 10
+omaps_lo = 7
+
+
+fmaps_hi = 10
+fmaps_lo = 7
+
+cigs_hi = 20
+
+drink_hi = 10
+
+
+
+
+########################
+# Creating Outlier Flags
+########################
+
+# Building loops for outlier imputation
+
+
+
+########################
+# Mother's Age
+
+bw_m['out_mage'] = 0
+
+
+for val in enumerate(bw_m.loc[ : , 'mage']):
+    
+    if val[1] <= mage_lo:
+        bw_m.loc[val[0], 'out_mage'] = -1
+        
+for val in enumerate(bw_m.loc[ : , 'mage']):    
+    
+    if val[1] >= mage_hi:
+        bw_m.loc[val[0], 'out_mage'] = 1
+
+
+########################
+# Mother's Education
+
+bw_m['out_meduc'] = 0
+
+for val in enumerate(bw_m.loc[ : , 'meduc']):
+    
+    if val[1] <= meduc_lo:
+        bw_m.loc[val[0], 'out_meduc'] = -1
+
+
+for val in enumerate(bw_m.loc[ : , 'meduc']):
+    
+    if val[1] >= meduc_hi:
+        bw_m.loc[val[0], 'out_meduc'] = 1
+        
+        
+        
+########################
+# Father's Age
+
+bw_m['out_fage'] = 0
+
+
+for val in enumerate(bw_m.loc[ : , 'fage']):
+    
+    if val[1] <= fage_lo:
+        bw_m.loc[val[0], 'out_fage'] = -1
+
+
+for val in enumerate(bw_m.loc[ : , 'fage']):
+    
+    if val[1] <= fage_hi:
+        bw_m.loc[val[0], 'out_fage'] = 1
+
+
+
+########################
+# Father's Education
+     
+bw_m['out_feduc'] = 0
+
+for val in enumerate(bw_m.loc[ : , 'feduc']):
+    
+    if val[1] <= feduc_lo:
+        bw_m.loc[val[0], 'out_feduc'] = -1
+
+
+for val in enumerate(bw_m.loc[ : , 'feduc']):
+    
+    if val[1] >= feduc_hi:
+        bw_m.loc[val[0], 'out_feduc'] = 1
+
+
+########################
+# Month's of Pre Natal
+     
+bw_m['out_monpre'] = 0
+
+
+for val in enumerate(bw_m.loc[ : , 'monpre']):
+    
+    if val[1] >= monpre_hi:
+        bw_m.loc[val[0], 'out_monpre'] = 1
+
+
+########################
+# Number of Visits
+     
+bw_m['out_npvis'] = 0
+
+for val in enumerate(bw_m.loc[ : , 'npvis']):
+    
+    if val[1] <= npvis_lo:
+        bw_m.loc[val[0], 'out_npvis'] = -1
+
+
+for val in enumerate(bw_m.loc[ : , 'npvis']):
+    
+    if val[1] >= npvis_hi:
+        bw_m.loc[val[0], 'out_npvis'] = 1
+
+
+########################
+# One Minute Apgar Score
+
+bw_m['out_omaps'] = 0
+
+
+for val in enumerate(bw_m.loc[ : , 'omaps']):
+    
+    if val[1] <= omaps_lo:
+        bw_m.loc[val[0], 'out_omaps'] = -1
+
+
+for val in enumerate(bw_m.loc[ : , 'omaps']):
+    
+    if val[1] >= omaps_hi:
+        bw_m.loc[val[0], 'out_omaps'] = 1
+
+
+
+########################
+# Five - Minute Apgar Score
+
+bw_m['out_fmaps'] = 0
+
+for val in enumerate(bw_m.loc[ : , 'omaps']):
+    
+    if val[1] <= fmaps_lo:
+        bw_m.loc[val[0], 'out_omaps'] = -1
+
+
+
+for val in enumerate(bw_m.loc[ : , 'fmaps']):
+    
+    if val[1] >= fmaps_hi:
+        bw_m.loc[val[0], 'out_fmaps'] = 1
+
+
+
+########################
+# Average Cigertte
+
+bw_m['out_cigs'] = 0
+
+for val in enumerate(bw_m.loc[ : , 'cigs']):
+    
+    if val[1] >= cigs_hi:
+        bw_m.loc[val[0], 'out_cigs'] = 1
+
+
+########################
+# Average Drinking 
+        
+bw_m['out_drink'] = 0
+
+
+for val in enumerate(bw_m.loc[ : , 'drink']):
+    
+    if val[1] >= drink_hi:
+        bw_m.loc[val[0], 'out_drink'] = 1
+        
+        
+        
+        
+
+# Here we do the correlation
+bw_m_corr = bw_m.corr()
+
+# now let's do the graph of the heatmap
+fig, ax=plt.subplots(figsize=(10,10))
+sns.set(font_scale=2)
+sns.heatmap(bw_m_corr,
+            cmap = 'Blues',
+            square = True,
+            annot = False,
+            linecolor = 'black',
+            linewidths = 0.5)
+
+#plt.savefig('correlation_matrix_all_var')
+plt.show()
+
+
+#From the visual approach we can see that there are some interesting correlations:*
+# * 1) Birth Weight and cigs = Negative
+# * 2) Birth Weight and drink = Negative
+# * 3) Birth Weight and mage = Negative
+# * 4) Birth Weight and fage = Negative
+# * 5) Moth (mother other) and feduc = Positive
+# * 6) foth and feduc = Positive
+# * 7) fwhite and feduc = Negative
+
+# ## Strong Numerical Correlations
+"""Let's take the strongest correlation (positives & negatives) related to 
+"bwght" (objective variable)"""
+
+
+# Let's print ascending first
+bw_m_corr['bwght'].sort_values(ascending=True).head(10)
+
+
+"""Here we can see that there are 2 strong correlated variables that are 
+related to have a low performance in terms of Birth Weight, 
+this ones are "drink" and "cigs". Later we will try to change 
+the values of "cigs" to make them binary to see if there more c
+hance of a bigger corr()*** """
+
+# #### Now let's try with the positive correlated variables.
+
+# Let's print ascending= False
+bw_m_corr['bwght'].sort_values(ascending=False).head(10)
+
+
+# ***There's nothing with a strong positive correlation with bwght***
+
+# 
+# ### Other Variables Related With Health
+"""Let's try now with other variable related to the health of a 
+ born baby: "omaps" that is the Apgar Test """
+ 
+ # Let's print ascending first
+bw_m_corr['omaps'].sort_values(ascending=True).head(10)
+
+
+# Let's print ascending= False
+bw_m_corr['omaps'].sort_values(ascending=False).head(10)
+
+
+# ***As we can see here there are no strong correlations using this variable.***
+
+# ## Correlations Graphs
+"""
+Now let's plot all the correlations that we think are interesting after 
+looking the heatmap and the numerical correlations, so we can 
+have a graphical taste of them. """
+
+
+sns.set()
+cols = ['bwght', 'drink', 'cigs', 'omaps', 'mage', 'fage', 'moth', 'feduc', 'foth', 'fwhte']
+sns.pairplot(bw_m[cols])
+plt.show();
+
+
+# # Numerical Variables Distribution
+"""
+Let's plot all the variables ditributions to have a graphical idea of the 
+distribution of all our variables
+"""
+
+
+bw_m.hist(figsize=(16, 20), bins=50, xlabelsize=12, ylabelsize=12)
+
+
+"""
+Here we can see graphicaly the binary variables like mwhte, moth, mblck, etc. 
+Also we can see is how the age of the fathers is not so high and the weight 
+is mostly between the normal values, what means young fathers 
+(mostly below 35-40) here are the most common as the normal weight 
+of the babies"""
+
+
+# # Dataset Adjustment
+# 
+"""
+Now let's change the cigs variable into a binary variable. This is to make 
+it more correlated to the variable birht weight, that will make more sense. 
+In fact the measure is the AVG PER DAY, we can say that if your avg is at 
+least 1 per day you must have a 1 and if you dont smoke nothing 
+you will have a 0"""
+
+
+
+#Lets save the file to an excel
+
+bw_m.to_excel('Birthweight_explored.xlsx')
+
+
+
+
+
+
+# Let's change the values in cigs for 1s and 0s
+bw_m1 = pd.read_excel('Birthweight_explored.xlsx')
+
+bw_m1.loc[bw_m1['cigs'] > 0, 'cigs'] = 1
+
+
+# ### Result of this approach:
+"""This was not a good approach, you get more distortion in 
+the correlations and in the data.
+
+*Also changing the treshold is not giving better results, the corr
+goes up and getting positive, no sense.
+
+* And this is bacause the mojority of the observaions have at leats 1 
+cigarete as the avg per day, not giving to us enough info 
+about the non-smoking observations.
+"""
+
+
+# ### ***Really interesting results:***
+"""
+Here we find that not only this babies have low weight, but also they 
+have a low Apgar Score (mean omaps= 4.25), and also they have another thing 
+related that is the age of the mother and father, in hthis cases the AVG 
+Mother Age is 66.75 (the highest value in age is 71 this is super rare), 
+and the AVG Father Age is 54.25, and also in terms of bad habits they have all, 
+the AVG of cigs is 22.5 per day and drinks is 10.50 per week, tgis value are 
+between the highest of these variables.***
+"""
+
+
+#Time to start building Models
+
+
+###############################################################################
+# Univariate Regression Analysis
+###############################################################################
+
+# Building a Regression Base
+lm_full = smf.ols(formula = """bwght ~ bw_m1['out_omaps'] +
+                                    bw_m1['fmaps'] +
+                                    bw_m1['omaps'] +
+                                    bw_m1['out_fage'] +
+                                    bw_m1['feduc'] +
+                                    bw_m1['mblck'] +
+                                    bw_m1['fblck'] +
+                                    bw_m1['male'] +
+                                    bw_m1['out_npvis'] +
+                                    bw_m1['meduc'] +
+                                    bw_m1['out_fmaps'] +
+                                    bw_m1['m_npvis'] +
+                                    bw_m1['npvis'] +
+                                    bw_m1['out_meduc'] +
+                                    bw_m1['out_feduc'] +
+                                    bw_m1['m_feduc'] +
+                                    bw_m1['moth'] +
+                                    bw_m1['fwhte'] +
+                                    bw_m1['monpre'] +
+                                    bw_m1['foth'] +
+                                    bw_m1['mwhte'] +
+                                    bw_m1['m_meduc'] +
+                                    bw_m1['out_monpre'] +
+                                    bw_m1['out_cigs'] +
+                                    bw_m1['out_mage'] +
+                                    bw_m1['out_drink'] +
+                                    bw_m1['fage'] +
+                                    bw_m1['mage'] +
+                                    bw_m1['cigs'] +
+                                    bw_m1['drink']
+                                    """,
+                        data = bw_m1)
+
+
+# Fitting Results
+results = lm_full.fit()
+
+
+
+# Printing Summary Statistics
+print(results.summary())
+ 
+
+
+
+# Building a Regression Base
+lm_sig = smf.ols(formula = """bwght ~ 
+                                    bw_m1['out_fage'] +
+                                    bw_m1['mblck'] +
+                                    bw_m1['fblck'] +
+                                    bw_m1['moth'] +
+                                    bw_m1['fwhte'] +
+                                    bw_m1['foth'] +
+                                    bw_m1['mwhte'] +
+                                    bw_m1['out_drink'] +
+                                    bw_m1['mage'] +
+                                    bw_m1['cigs'] +
+                                    bw_m1['drink']
+                                    """,
+                        data = bw_m1)
+
+
+# Fitting Results
+results_sig = lm_sig.fit()
+
+
+
+# Printing Summary Statistics
+print(results_sig.summary())
+
+
+
+# Checking predicted sale prices v. actual sale prices
+predict = results_sig.predict()
+y_hat   = pd.DataFrame(predict).round(2)
+resids  = results.resid.round(2)
+
+
+# Saving as a new dataset for future use.
+bw_m1.to_excel('Birthweight_Dummies.xlsx')
+
+
+
+#Importing Dummies file
